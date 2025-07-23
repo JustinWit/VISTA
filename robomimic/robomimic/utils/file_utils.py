@@ -35,7 +35,7 @@ def create_hdf5_filter_key(hdf5_path, demo_keys, key_name):
     Args:
         hdf5_path (str): path to hdf5 file
         demo_keys ([str]): list of demonstration keys which should
-            correspond to this filter key. For example, ["demo_0", 
+            correspond to this filter key. For example, ["demo_0",
             "demo_1"].
         key_name (str): name of filter key to create
 
@@ -43,7 +43,7 @@ def create_hdf5_filter_key(hdf5_path, demo_keys, key_name):
         ep_lengths ([int]): list of episode lengths that corresponds to
             each demonstration in the new filter key
     """
-    f = h5py.File(hdf5_path, "a")  
+    f = h5py.File(hdf5_path, "a")
     demos = sorted(list(f["data"].keys()))
 
     # collect episode lengths for the keys of interest
@@ -73,7 +73,7 @@ def get_demos_for_filter_key(hdf5_path, filter_key):
 
     Returns:
         demo_keys ([str]): list of demonstration keys that
-            correspond to this filter key. For example, ["demo_0", 
+            correspond to this filter key. For example, ["demo_0",
             "demo_1"].
     """
     f = h5py.File(hdf5_path, "r")
@@ -91,7 +91,7 @@ def get_env_metadata_from_dataset(dataset_path, set_env_specific_obs_processors=
 
         set_env_specific_obs_processors (bool): environment might have custom rules for how to process
             observations - if this flag is true, make sure ObsUtils will use these custom settings. This
-            is a good place to do this operation to make sure it happens before loading data, running a 
+            is a good place to do this operation to make sure it happens before loading data, running a
             trained model, etc.
 
     Returns:
@@ -172,7 +172,7 @@ def get_shape_metadata_from_dataset(dataset_path, all_obs_keys=None, verbose=Fal
 def load_dict_from_checkpoint(ckpt_path):
     """
     Load checkpoint dictionary from a checkpoint file.
-    
+
     Args:
         ckpt_path (str): Path to checkpoint file.
 
@@ -447,9 +447,9 @@ def env_from_checkpoint(ckpt_path=None, ckpt_dict=None, env_name=None, render=Fa
 
     # create env from saved metadata
     env = EnvUtils.create_env_from_metadata(
-        env_meta=env_meta, 
-        env_name=env_name, 
-        render=render, 
+        env_meta=env_meta,
+        env_name=env_name,
+        render=render,
         render_offscreen=render_offscreen,
         use_image_obs=shape_meta.get("use_images", False),
         use_depth_obs=shape_meta.get("use_depths", False),

@@ -10,7 +10,7 @@ Args:
 
     shaped (bool): if flag is set, use dense rewards
 
-    camera_names (str or [str]): camera name(s) to use for image observations. 
+    camera_names (str or [str]): camera name(s) to use for image observations.
         Leave out to not use image observations.
 
     camera_height (int): height of image observation.
@@ -25,10 +25,10 @@ Args:
     copy_dones (bool): if provided, copy dones from source file instead of inferring them
 
 Example usage:
-    
+
     # extract low-dimensional observations
     python dataset_states_to_obs.py --dataset /path/to/demo.hdf5 --output_name low_dim.hdf5 --done_mode 2
-    
+
     # extract 84x84 image observations
     python dataset_states_to_obs.py --dataset /path/to/demo.hdf5 --output_name image.hdf5 \
         --done_mode 2 --camera_names agentview robot0_eye_in_hand --camera_height 84 --camera_width 84
@@ -37,7 +37,7 @@ Example usage:
     python dataset_states_to_obs.py --dataset /path/to/demo.hdf5 --output_name depth.hdf5 \
         --done_mode 2 --camera_names agentview robot0_eye_in_hand --camera_height 84 --camera_width 84 --depth
 
-    # (space saving option) extract 84x84 image observations with compression and without 
+    # (space saving option) extract 84x84 image observations with compression and without
     # extracting next obs (not needed for pure imitation learning algos)
     python dataset_states_to_obs.py --dataset /path/to/demo.hdf5 --output_name image.hdf5 \
         --done_mode 2 --camera_names agentview robot0_eye_in_hand --camera_height 84 --camera_width 84 \
@@ -73,13 +73,13 @@ from vipl.utils.camera_pose_sampler import CameraPoseSampler
 from vipl.models.augmentation import get_model_by_name
 
 def extract_trajectory(
-    env, 
-    initial_state, 
-    states, 
+    env,
+    initial_state,
+    states,
     actions,
     done_mode,
-    camera_names=None, 
-    camera_height=84, 
+    camera_names=None,
+    camera_height=84,
     camera_width=84,
     randomize_camera=False,
     camera_randomization_type=False,
@@ -95,8 +95,8 @@ def extract_trajectory(
         initial_state (dict): initial simulation state to load
         states (np.array): array of simulation states to load to extract information
         actions (np.array): array of actions
-        done_mode (int): how to write done signal. If 0, done is 1 whenever s' is a 
-            success state. If 1, done is 1 at the end of each trajectory. 
+        done_mode (int): how to write done signal. If 0, done is 1 whenever s' is a
+            success state. If 1, done is 1 at the end of each trajectory.
             If 2, do both.
     """
     assert isinstance(env, EnvBase)
@@ -119,18 +119,18 @@ def extract_trajectory(
             env=env.env,
             camera="agentview"
         )
-     
+
         initial_camera_pose = deepcopy(camera_mover.get_camera_pose())
         camera_pose_sampler = CameraPoseSampler(sampler_type=random_camera_range)
         random_camera_poses = camera_pose_sampler.sample_poses(n=states.shape[0], starting_pose=initial_camera_pose)
 
     traj = dict(
-        obs=[], 
-        next_obs=[], 
-        rewards=[], 
-        dones=[], 
-        actions=np.array(actions), 
-        states=np.array(states), 
+        obs=[],
+        next_obs=[],
+        rewards=[],
+        dones=[],
+        actions=np.array(actions),
+        states=np.array(states),
         initial_state_dict=initial_state,
     )
     traj_len = states.shape[0]
@@ -234,7 +234,7 @@ def check_file(file_name, args, demos, all_demos):
                 # output_ind = parse_iter * len(all_demos) + ind
                 # output_ep_name = "demo_{}".format(output_ind)
                 # output_ep_name = demos[ind]
-                # actual index of the demo in the original file, e.g. demo_6 -> 6. 
+                # actual index of the demo in the original file, e.g. demo_6 -> 6.
                 # This is not necessarily the same as the "ind" iterator
                 demo_index = get_demo_index_from_key(demos[ind])
                 output_ep_idx = parse_iter * len(all_demos) + demo_index
@@ -275,7 +275,7 @@ def dataset_states_to_obs(args):
 
     env = EnvUtils.create_env_for_data_processing(
         env_meta=env_meta,
-        camera_names=args.camera_names, 
+        camera_names=args.camera_names,
         camera_height=camera_height,
         camera_width=camera_width,
         reward_shaping=args.shaped,
@@ -343,10 +343,10 @@ def dataset_states_to_obs(args):
     print("output file: {}".format(output_path))
 
     if args.camera_randomization_type != "sim":
-        aug_model = get_model_by_name(args.camera_randomization_type) 
+        aug_model = get_model_by_name(args.camera_randomization_type)
     else:
         aug_model = None
-   
+
     total_samples = 0
     for parse_iter in tqdm(range(args.parse_iters)):
         for ind in tqdm(range(len(demos))):
@@ -367,7 +367,7 @@ def dataset_states_to_obs(args):
             actions = f["data/{}/actions".format(ep_to_read)][()]
 
             if args.randomize_cam:
-                randomize_cam_range = args.randomize_cam_range 
+                randomize_cam_range = args.randomize_cam_range
             else:
                 randomize_cam_range = None
 
@@ -477,7 +477,7 @@ if __name__ == "__main__":
 
     # flag for reward shaping
     parser.add_argument(
-        "--shaped", 
+        "--shaped",
         action='store_true',
         help="(optional) use shaped rewards",
     )
@@ -507,13 +507,13 @@ if __name__ == "__main__":
 
     # flag for including depth observations per camera
     parser.add_argument(
-        "--depth", 
+        "--depth",
         action='store_true',
         help="(optional) use depth observations for each camera",
     )
 
-    # specifies how the "done" signal is written. If "0", then the "done" signal is 1 wherever 
-    # the transition (s, a, s') has s' in a task completion state. If "1", the "done" signal 
+    # specifies how the "done" signal is written. If "0", then the "done" signal is 1 wherever
+    # the transition (s, a, s') has s' in a task completion state. If "1", the "done" signal
     # is one at the end of every trajectory. If "2", the "done" signal is 1 at task completion
     # states for successful trajectories and 1 at the end of all trajectories.
     parser.add_argument(
@@ -526,28 +526,28 @@ if __name__ == "__main__":
 
     # flag for copying rewards from source file instead of re-writing them
     parser.add_argument(
-        "--copy_rewards", 
+        "--copy_rewards",
         action='store_true',
         help="(optional) copy rewards from source file instead of inferring them",
     )
 
     # flag for copying dones from source file instead of re-writing them
     parser.add_argument(
-        "--copy_dones", 
+        "--copy_dones",
         action='store_true',
         help="(optional) copy dones from source file instead of inferring them",
     )
 
     # flag to exclude next obs in dataset
     parser.add_argument(
-        "--exclude-next-obs", 
+        "--exclude-next-obs",
         action='store_true',
         help="(optional) exclude next obs in dataset",
     )
 
     # flag to compress observations with gzip option in hdf5
     parser.add_argument(
-        "--compress", 
+        "--compress",
         action='store_true',
         help="(optional) compress observations with gzip option in hdf5",
     )
@@ -577,7 +577,7 @@ if __name__ == "__main__":
         "--parse-iters",
         type=int,
         default=1,
-        help="""number of times to go over the dataset. This makes sense if you want to randomize camera positions, 
+        help="""number of times to go over the dataset. This makes sense if you want to randomize camera positions,
              "and say, you want to randomize camera positions 10 times for each trajectory."""
     )
 
@@ -588,7 +588,7 @@ if __name__ == "__main__":
         default="arc_90deg",
         help="how to sample the random camera poses. Options are 'small_perturb', 'arc_90deg'"
     )
-    
+
     parser.add_argument(
         "--zeronvs_scale",
         type=float,

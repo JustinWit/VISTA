@@ -31,7 +31,7 @@ class ZeroNVSModel(BaseAugModel):
         self.guidance = self._setup_zeronvs_model(pretrained_checkpoint=checkpoint, pretrained_config=config)
         self.zeronvs_params = dict()
         # defaults
-        self.zeronvs_params["ddim_steps"] = 250 
+        self.zeronvs_params["ddim_steps"] = 250
         self.zeronvs_params["ddim_eta"] = 1.0
         self.zeronvs_params["lpips_loss_threshold"] = 0.9
         self.zeronvs_params["num_tries"] = 5
@@ -93,7 +93,7 @@ class ZeroNVSModel(BaseAugModel):
             pretrained_model_name_or_path=pretrained_checkpoint,
             pretrained_config=pretrained_config,
             guidance_scale=7.5,
-            cond_image_path="/viscam/projects/vipl/nextnvs/motorcycle.png",  # unused
+            cond_image_path="/home/ripl/vista_workspace/ZeroNVS/motorcycle.png",  # unused
             min_step_percent=[0, .75, .02, 1000],
             max_step_percent=[1000, 0.98, 0.025, 2500],
             vram_O=False
