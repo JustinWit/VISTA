@@ -26,7 +26,7 @@ def main(args):
                 )
             )
 
-    # this is what we use in RLBench as the initial camera pose, TODO: convert to opengl convention (position (x,y,z), quaternion (w,x,y,z))
+    # this is what we use in RLBench as the initial camera pose
     initial_camera_matrix = np.array([
         [-1.43894450e-03, -5.77754720e-01, -8.16209172e-01,  1.15491505e+00],
         [-9.99977838e-01, -4.47417670e-03,  4.92997317e-03, -1.49455355e-02],
@@ -42,6 +42,8 @@ def main(args):
     # loop through the dataset
     fnames = sorted(os.listdir(args.data_path))
     fnames = [fname for fname in fnames if fname.endswith('.h5')]
+
+    num_demos = len(fnames)
 
     for fname in tqdm(fnames):
         file_path = os.path.join(args.data_path, fname)
@@ -82,11 +84,15 @@ def main(args):
             # plt.imshow(np.hstack((third_ppov[t].astype(np.uint8), np.array(obs_augmented.resize((360, 360))))))
             # plt.axis('off')
             # plt.show()
+            break
 
         # check if path exists, if not create it
         if not os.path.exists(args.data_path + "_vista"):
             os.makedirs(args.data_path + "_vista")
-        with h5py.File(os.path.join(args.data_path + "_vista", fname), 'w') as f:
+        
+        demo_idx = int(fname.split('.')[0].split('_')[1]) + (num_demos * args.i)
+        new_fname = f'demo_{demo_idx:03d}.h5'
+        with h5py.File(os.path.join(args.data_path + "_vista", new_fname), 'w') as f:
             # copy original data
             for key in data.keys():
                 if key != 'rgb_frames':
@@ -100,5 +106,6 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run ZeroNVS augmentation")
     parser.add_argument('--data_path', type=str, required=True, help='Path to the dataset')
+    parser.add_argument('-i', type=int, required=False, help='Starting demo number to save file under. Use for array jobs', default=0)
     args = parser.parse_args()
     main(args)

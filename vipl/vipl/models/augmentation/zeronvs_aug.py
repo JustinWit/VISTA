@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 import numpy as np
 import torch
-from robomimic.envs.env_robosuite import EnvRobosuite
+# from robomimic.envs.env_robosuite import EnvRobosuite
 import robosuite.utils.transform_utils as T
 from robosuite.utils.camera_utils import CameraMover, generate_random_camera_pose
 
@@ -93,7 +93,7 @@ class ZeroNVSModel(BaseAugModel):
             pretrained_model_name_or_path=pretrained_checkpoint,
             pretrained_config=pretrained_config,
             guidance_scale=7.5,
-            cond_image_path="/home/ripl/vista_workspace/ZeroNVS/motorcycle.png",  # unused
+            cond_image_path="/coc/testnvme/jwit3/vista_workspace/ZeroNVS/motorcycle.png",  # unused
             min_step_percent=[0, .75, .02, 1000],
             max_step_percent=[1000, 0.98, 0.025, 2500],
             vram_O=False
