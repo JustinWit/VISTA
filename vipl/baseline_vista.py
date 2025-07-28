@@ -84,7 +84,6 @@ def main(args):
             # plt.imshow(np.hstack((third_ppov[t].astype(np.uint8), np.array(obs_augmented.resize((360, 360))))))
             # plt.axis('off')
             # plt.show()
-            break
 
         # check if path exists, if not create it
         if not os.path.exists(args.data_path + "_vista"):
