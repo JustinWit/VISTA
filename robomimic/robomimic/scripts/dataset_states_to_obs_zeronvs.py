@@ -72,6 +72,8 @@ from vipl.utils.cam_utils import posori_to_rotmat
 from vipl.utils.camera_pose_sampler import CameraPoseSampler
 from vipl.models.augmentation import get_model_by_name
 
+from change_domain import change_to_domain
+
 def extract_trajectory(
     env,
     initial_state,
@@ -362,6 +364,11 @@ def dataset_states_to_obs(args):
             initial_state = dict(states=states[0])
             if is_robosuite_env:
                 initial_state["model"] = f["data/{}".format(ep_to_read)].attrs["model_file"]
+                
+                # here we could modify the file the textures point to and get the desired effect
+                if args.visual_domain is not None:
+                    initial_state["model"] = change_to_domain(initial_state["model"], args.visual_domain.upper())
+
 
             # extract obs, rewards, dones
             actions = f["data/{}/actions".format(ep_to_read)][()]
@@ -594,6 +601,13 @@ if __name__ == "__main__":
         type=float,
         default=0.6,
         help="(optional) zeronvs precomputed scene scale"
+    )
+
+    parser.add_argument(
+        "--visual_domain", 
+        type=str,
+        default=None,
+        help="(optional) select which visual domain to load, must be defined in change_domain.py"
     )
 
     args = parser.parse_args()

@@ -222,6 +222,17 @@ class EnvRobosuite(EB.EnvBase):
                 ret[k] = self.get_real_depth_map(ret[k])
                 if self.postprocess_visual_obs:
                     ret[k] = ObsUtils.process_obs(obs=ret[k], obs_key=k)
+            elif (k in ObsUtils.OBS_KEYS_TO_MODALITIES) and ObsUtils.key_is_obs_modality(key=k, obs_modality="segmentation"):
+                # Segmentation images from mujoco are also flipped vertically
+                ret[k] = di[k][::-1]
+
+                # Convert to (H, W, 1) if you want consistent shape
+                if len(ret[k].shape) == 2:
+                    ret[k] = ret[k][..., None]
+
+                # Optional: map integer IDs to a color image for visualization
+                if self.postprocess_visual_obs:
+                    ret[k] = ObsUtils.process_obs(obs=ret[k], obs_key=k)
 
         # "object" key contains object information
         ret["object"] = np.array(di["object-state"])
@@ -464,6 +475,7 @@ class EnvRobosuite(EB.EnvBase):
         if is_v1:
             image_modalities = ["{}_image".format(cn) for cn in camera_names]
             depth_modalities = ["{}_depth".format(cn) for cn in camera_names]
+            segmentation_modalities = ["{}_segmentation_element".format(cn) for cn in camera_names]
         elif has_camera:
             # v0.3 only had support for one image, and it was named "image"
             assert len(image_modalities) == 1
@@ -473,6 +485,7 @@ class EnvRobosuite(EB.EnvBase):
             "obs": {
                 "low_dim": [], # technically unused, so we don't have to specify all of them
                 "rgb": image_modalities,
+                "segmentation": segmentation_modalities,
             }
         }
         if use_depth_obs:
