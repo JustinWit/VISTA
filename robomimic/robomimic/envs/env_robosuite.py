@@ -476,6 +476,8 @@ class EnvRobosuite(EB.EnvBase):
             image_modalities = ["{}_image".format(cn) for cn in camera_names]
             depth_modalities = ["{}_depth".format(cn) for cn in camera_names]
             segmentation_modalities = ["{}_segmentation_element".format(cn) for cn in camera_names]
+            segmentation_modalities.extend(["{}_segmentation_instance".format(cn) for cn in camera_names])
+            segmentation_modalities.extend(["{}_segmentation_class".format(cn) for cn in camera_names])
         elif has_camera:
             # v0.3 only had support for one image, and it was named "image"
             assert len(image_modalities) == 1

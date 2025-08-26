@@ -72,7 +72,7 @@ from vipl.utils.cam_utils import posori_to_rotmat
 from vipl.utils.camera_pose_sampler import CameraPoseSampler
 from vipl.models.augmentation import get_model_by_name
 
-from change_domain import change_to_domain
+from exp_processing import change_to_domain, assign_groups
 
 def extract_trajectory(
     env,
@@ -369,7 +369,6 @@ def dataset_states_to_obs(args):
                 if args.visual_domain is not None:
                     initial_state["model"] = change_to_domain(initial_state["model"], args.visual_domain.upper())
 
-
             # extract obs, rewards, dones
             actions = f["data/{}/actions".format(ep_to_read)][()]
 
@@ -392,6 +391,13 @@ def dataset_states_to_obs(args):
                 random_camera_range=randomize_cam_range,
                 nvs_model=aug_model,
             )
+
+            # post process segmentation data to be in desired format
+            if args.camera_randomization_type == "sim" and True:  # TODO: add parameter for segmentation data because unnecessary when we use zeronvs
+                segments = assign_groups(env, traj["obs"], args.camera_names)
+                for name in args.camera_names:
+                    traj['obs'][f'{name}_segmentation_final'] = segments[name]
+
 
             # maybe copy reward or done signal from source file
             if args.copy_rewards:

@@ -297,6 +297,9 @@ def create_env_for_data_processing(
     env_kwargs.pop("use_image_obs", None)
     env_kwargs.pop("use_depth_obs", None)
 
+    # add so we get segmentation
+    env_kwargs["camera_segmentations"] = [["instance", "class", "element"] for _ in camera_names]
+
     env = env_class.create_for_data_processing(
         env_name=env_name, 
         camera_names=camera_names, 
