@@ -67,6 +67,8 @@ from robosuite.utils.camera_utils import CameraMover, generate_random_camera_pos
 from vipl.utils.env_utils import get_camera_info
 from vipl.utils.cam_utils import posori_to_rotmat
 
+from exp_processing import assign_groups, change_to_domain
+
 def img_to_jpg_bytes(imgs):
     agg = []
     for img in imgs:
@@ -95,6 +97,7 @@ def extract_trajectory(
     random_camera_params=None,
     nvs_model=None,
     views_per_state=1,
+    cam_poses = None,  # set to none to generate new every step, or pass list to generate from
 ):
     """
     Helper function to extract observations, rewards, and dones along a trajectory using
@@ -145,15 +148,21 @@ def extract_trajectory(
             theta_range=[-np.pi/4, np.pi/4],
             num_samples=(states.shape[0] + 1) * views_per_state
         )
+    recorded_cam_poses = []
     random_cam_idx = 0
     obs = env.reset_to({"states": initial_state["states"]})
     for v in range(views_per_state):
-        pos, quat = random_camera_poses[random_cam_idx]
-        camera_mover.set_camera_pose(
-            pos=pos,
-            quat=quat,
-        )
-        random_cam_idx += 1
+        if randomize_camera:
+            if cam_poses == None:
+                pos, quat = random_camera_poses[random_cam_idx]
+                recorded_cam_poses.append((pos, quat))
+            else:
+                pos, quat = cam_poses[0]
+            camera_mover.set_camera_pose(
+                pos=pos,
+                quat=quat,
+            )
+            random_cam_idx += 1
         obs_rnd = env.reset_to({"states": initial_state["states"]})
         for camera in camera_names:
             obs[f"{camera}_{v}_image"] = obs_rnd[f"{camera}_image"]
@@ -195,12 +204,17 @@ def extract_trajectory(
         done = int(done)
 
         for v in range(views_per_state):
-            pos, quat = random_camera_poses[random_cam_idx]
-            camera_mover.set_camera_pose(
-                pos=pos,
-                quat=quat,
-            )
-            random_cam_idx += 1
+            if randomize_camera:
+                if cam_poses == None:
+                    pos, quat = random_camera_poses[random_cam_idx]
+                    recorded_cam_poses.append((pos, quat))
+                else:
+                    pos, quat = cam_poses[t]
+                camera_mover.set_camera_pose(
+                    pos=pos,
+                    quat=quat,
+                )
+                random_cam_idx += 1
             if t == traj_len:
                 # play final action to get next observation for last timestep
                 env.reset_to({"states": states[t-1]})
@@ -239,7 +253,7 @@ def extract_trajectory(
         else:
             traj[k] = np.array(traj[k])
 
-    return traj, camera_info
+    return traj, camera_info, recorded_cam_poses
 
 
 def get_demo_index_from_key(key):
@@ -251,14 +265,17 @@ def dataset_states_to_obs(args):
     if args.depth:
         assert len(args.camera_names) > 0, "must specify camera names if using depth"
 
+    if args.test_data is not None:
+        assert args.visual_domain is not None, "must specify source domain to generate test data"
+
     # create environment to use for data processing
     env_meta = FileUtils.get_env_metadata_from_dataset(dataset_path=args.dataset)
 
-    # camera_height = args.camera_height
-    # camera_width = args.camera_width
+    camera_height = args.camera_height
+    camera_width = args.camera_width
 
-    camera_height = 256
-    camera_width = 256
+    # camera_height = 256
+    # camera_width = 256
 
     env = EnvUtils.create_env_for_data_processing(
         env_meta=env_meta,
@@ -302,6 +319,10 @@ def dataset_states_to_obs(args):
     aug_model = None
     assert args.parse_iters == 1
 
+    if args.test_data is not None:
+        args.parse_iters = 2
+        cam_poses = []
+
     total_samples = 0
     for parse_iter in tqdm(range(args.parse_iters)):
         for ind in tqdm(range(len(demos))):
@@ -318,6 +339,15 @@ def dataset_states_to_obs(args):
             if is_robosuite_env:
                 initial_state["model"] = f["data/{}".format(ep_to_read)].attrs["model_file"]
 
+            # Apply correct domain to scene
+            if args.test_data and parse_iter == 1:
+                initial_state["model"] = change_to_domain(initial_state["model"], args.test_data.upper())
+
+            elif args.visual_domain:
+                initial_state["model"] = change_to_domain(initial_state["model"], args.visual_domain.upper())
+
+            
+
             # extract obs, rewards, dones
             actions = f["data/{}/actions".format(ep_to_read)][()]
 
@@ -329,7 +359,7 @@ def dataset_states_to_obs(args):
             else:
                 randomize_cam_params = None
 
-            traj, camera_info = extract_trajectory(
+            traj, camera_info, cam_poses = extract_trajectory(
                 env=env,
                 initial_state=initial_state,
                 states=states,
@@ -342,8 +372,15 @@ def dataset_states_to_obs(args):
                 camera_randomization_type=args.camera_randomization_type,
                 random_camera_params=randomize_cam_params,
                 nvs_model=aug_model,
-                views_per_state=args.views_per_state
+                views_per_state=args.views_per_state, 
+                cam_poses=None if not args.test_data or parse_iter==0 else cam_poses, 
             )
+
+            # post process segmentation data to be in desired format
+            if args.include_seg:
+                segments = assign_groups(env, traj["obs"], args.camera_names)
+                for name in args.camera_names:
+                    traj['obs'][f'{name}_segmentation_final'] = segments[name]
 
             # maybe copy reward or done signal from source file
             if args.copy_rewards:
@@ -354,6 +391,8 @@ def dataset_states_to_obs(args):
             # store transitions
             # IMPORTANT: keep name of group the same as source file, to make sure that filter keys are
             #            consistent as well
+            if args.test_data:
+                output_ep_name = f"domain{args.visual_domain}" if parse_iter == 0 else f"domain{args.test_data}"
             ep_data_grp = data_grp.create_group(output_ep_name)
             ep_data_grp.create_dataset("actions", data=np.array(traj["actions"]))
             ep_data_grp.create_dataset("states", data=np.array(traj["states"]))
@@ -563,7 +602,27 @@ if __name__ == "__main__":
         help="number of views rendered for each state"
     )
 
+    parser.add_argument(
+        "--include_seg",
+        action="store_true",
+        help="save segmentations to the dataset"
+    )
 
+    parser.add_argument(
+        "--visual_domain", 
+        type=str,
+        default=None,
+        choices=['A', 'B', 'C', 'D'], 
+        help="(optional) select which visual domain to load, must be defined in misc_dicts.py"
+    )
+
+    parser.add_argument(
+        "--test_data", 
+        type=str,
+        default=None,
+        choices=['A', 'B', 'C', 'D'], 
+        help="(optional) generate test data with matched camera views from this domain"
+    )
 
     args = parser.parse_args()
     dataset_states_to_obs(args)
