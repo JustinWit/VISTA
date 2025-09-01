@@ -98,6 +98,7 @@ def extract_trajectory(
     nvs_model=None,
     views_per_state=1,
     cam_poses = None,  # set to none to generate new every step, or pass list to generate from
+    include_seg = False, 
 ):
     """
     Helper function to extract observations, rewards, and dones along a trajectory using
@@ -165,8 +166,10 @@ def extract_trajectory(
             random_cam_idx += 1
         obs_rnd = env.reset_to({"states": initial_state["states"]})
         for camera in camera_names:
+            obs[f"{camera}_{v}_segmentation_element"] = obs_rnd[f"{camera}_segmentation_element"]
             obs[f"{camera}_{v}_image"] = obs_rnd[f"{camera}_image"]
             obs[f"{camera}_{v}_depth"] = obs_rnd[f"{camera}_depth"]
+            
             # also get the extrinsics
             extrinsics = get_camera_extrinsic_matrix(env.env.sim, camera)
             intrinsics = get_camera_intrinsic_matrix(env.env.sim, camera, camera_height, camera_width)
@@ -223,6 +226,7 @@ def extract_trajectory(
                 # reset to simulator state to get observation
                 next_obs_rnd = env.reset_to({"states": states[t]})
             for camera in camera_names:
+                next_obs[f"{camera}_{v}_segmentation_element"] = next_obs_rnd[f"{camera}_segmentation_element"]
                 next_obs[f"{camera}_{v}_image"] = next_obs_rnd[f"{camera}_image"]
                 next_obs[f"{camera}_{v}_depth"] = next_obs_rnd[f"{camera}_depth"]
                 # also get the extrinsics
@@ -374,13 +378,20 @@ def dataset_states_to_obs(args):
                 nvs_model=aug_model,
                 views_per_state=args.views_per_state, 
                 cam_poses=None if not args.test_data or parse_iter==0 else cam_poses, 
+                include_seg = args.include_seg,
             )
 
             # post process segmentation data to be in desired format
             if args.include_seg:
-                segments = assign_groups(env, traj["obs"], args.camera_names)
-                for name in args.camera_names:
-                    traj['obs'][f'{name}_segmentation_final'] = segments[name]
+                if args.views_per_state > 1:
+                    for i in range(args.views_per_state):
+                        segments = assign_groups(env, traj["obs"], args.camera_names, f"{i}_segmentation_element")
+                        for name in args.camera_names:
+                            traj['obs'][f'{name}_{i}_segmentation_final'] = segments[name]
+                else:
+                    segments = assign_groups(env, traj["obs"], args.camera_names)
+                    for name in args.camera_names:
+                        traj['obs'][f'{name}_segmentation_final'] = segments[name]
 
             # maybe copy reward or done signal from source file
             if args.copy_rewards:
