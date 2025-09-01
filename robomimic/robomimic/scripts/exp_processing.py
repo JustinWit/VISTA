@@ -48,8 +48,12 @@ def mode_filter(img: torch.Tensor, k: int = 3, padding: str = "reflect",
     Returns:
         Tensor of shape (N, 1, H, W) with per-window mode values (same dtype as input).
     """
-    
-    img = torch.from_numpy(img).permute(0, 3, 1, 2).contiguous()
+    if len(img.shape) == 3:
+        img = torch.from_numpy(img)
+        img = img.unsqueeze(0)
+        img = img.permute(0, 3, 1, 2).contiguous()
+    elif len(img.shape) == 4:
+        img = torch.from_numpy(img).permute(0, 3, 1, 2).contiguous()
     assert img.dim() == 4 and img.size(1) == 1, "img must be (N,1,H,W)"
     assert k % 2 == 1, "kernel size k must be odd"
 
@@ -76,8 +80,8 @@ def mode_filter(img: torch.Tensor, k: int = 3, padding: str = "reflect",
     return modes
 
 
-def assign_groups(env, obs, camera_names):
-    geom_seg = dict([(i, obs[f'{i}_segmentation_element']) for i in camera_names])
+def assign_groups(env, obs, camera_names, seg_name='segmentation_element'):
+    geom_seg = dict([(i, obs[f'{i}_{seg_name}']) for i in camera_names])
     mode_seg = {}
     final_seg = dict([(i, -1 * np.ones_like(geom_seg[i])) for i in camera_names])
 
@@ -94,7 +98,11 @@ def assign_groups(env, obs, camera_names):
 
     for x in final_seg:
         # use mode filter to drop stray pixels
-        final_seg[x] = mode_filter(final_seg[x], num_classes=env.env.sim.model.ngeom)
+        modes = mode_filter(final_seg[x], num_classes=env.env.sim.model.ngeom)
+        if len(geom_seg[camera_names[0]].shape) == 3:
+            final_seg[x] = mode_filter(final_seg[x], num_classes=env.env.sim.model.ngeom)[0]
+        else:
+            final_seg[x] = mode_filter(final_seg[x], num_classes=env.env.sim.model.ngeom)
 
         # manual map small objects back to correct group
         if env.name in TASK_OVERRIDES.keys():
