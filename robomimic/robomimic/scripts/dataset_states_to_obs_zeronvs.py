@@ -393,7 +393,7 @@ def dataset_states_to_obs(args):
             )
 
             # post process segmentation data to be in desired format
-            if args.camera_randomization_type == "sim" and True:  # TODO: add parameter for segmentation data because unnecessary when we use zeronvs
+            if args.camera_randomization_type == "sim" and args.include_seg:
                 segments = assign_groups(env, traj["obs"], args.camera_names)
                 for name in args.camera_names:
                     traj['obs'][f'{name}_segmentation_final'] = segments[name]
@@ -614,6 +614,12 @@ if __name__ == "__main__":
         type=str,
         default=None,
         help="(optional) select which visual domain to load, must be defined in change_domain.py"
+    )
+
+    parser.add_argument(
+        "--include_seg",
+        action="store_true",
+        help="save segmentations to the dataset"
     )
 
     args = parser.parse_args()
