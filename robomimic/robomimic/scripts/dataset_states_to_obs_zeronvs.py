@@ -599,7 +599,7 @@ if __name__ == "__main__":
         "--randomize_cam_range",
         type=str,
         default="arc_90deg",
-        help="how to sample the random camera poses. Options are 'small_perturb', 'arc_90deg'"
+        help="how to sample the random camera poses. Options are 'small_perturb', 'arc_90deg', 'large3d"
     )
 
     parser.add_argument(

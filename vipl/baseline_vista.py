@@ -106,7 +106,7 @@ def main(args):
             augmented_frames = np.array(augmented_frames)
             f.create_dataset('rgb_frames', data=augmented_frames)
 
-        # print(f"File written to: {os.path.join(args.data_path + "_vista", fname)}")
+        print(f"File written to: {os.path.join(args.data_path + '_vista', fname)}")
 
 
 if __name__ == "__main__":

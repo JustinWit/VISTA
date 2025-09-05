@@ -116,7 +116,7 @@ def generate_random_camera_pose_real_world(pos, rot, pos_rand=0.5, vert_rand=0.4
         target_rand = 0.02
         pos = np.expand_dims(pos, 0)
 
-        # sample points uniformly in a cube TODO: num_samples
+        # sample points uniformly in a cube
         pos_delta = np.random.uniform(-pos_rand, pos_rand, (num_samples, 2))
         vert_delta = np.random.uniform(-vert_rand, vert_rand, (num_samples, 1))
         new_cam_pos = pos + np.concatenate((pos_delta, vert_delta), axis=1)
@@ -125,7 +125,7 @@ def generate_random_camera_pose_real_world(pos, rot, pos_rand=0.5, vert_rand=0.4
         new_target = target + np.concatenate((target_delta, np.zeros_like(vert_delta)), axis=1)
         forward = new_target - new_cam_pos
         forward /= np.linalg.norm(forward)
-        # Define a world up vector. TODO: ensure this is correct
+        # Define a world up vector.
         # (In many simulators, the z-axis is up. Adjust if necessary.)
         up = np.array([0, 0, 1])
 
@@ -141,9 +141,47 @@ def generate_random_camera_pose_real_world(pos, rot, pos_rand=0.5, vert_rand=0.4
         for i, mat in enumerate(R):
             quats[i] = T.mat2quat(mat)
         
-        #TODO return values in correct format
+        # return values in correct format
         return list(zip(new_cam_pos, quats))
 
+
+def generate_random_camera_large3d(pos, pos_rand=0.5, vert_rand=0.42, num_samples=10, target=None):
+        """Randomizes Camera positions and rotations for in robomimic simulator. """
+        if target is None:
+            target = np.array([0, 0, 0.8])  # table center
+        target_rand = 0.02
+        pos = np.expand_dims(pos, 0)
+
+        # sample points uniformly in a cube
+        x_delta = np.random.uniform(0, pos_rand*2, (num_samples, 1))  # camera is as far forward as we should see so only move backwards
+        y_delta = np.random.uniform(-pos_rand, pos_rand, (num_samples, 1))  # camera is centered so split to left and rights
+        z_min = target[2] - pos[0,2] + .1
+        z_delta = np.random.uniform(z_min, z_min + (vert_rand*2), (num_samples, 1))  # camera should never go below table height + buffer
+        new_cam_pos = pos + np.concatenate((x_delta, y_delta, z_delta), axis=1)
+
+        target_delta = np.random.uniform(-target_rand, target_rand, (num_samples, 2))
+        new_target = target + np.concatenate((target_delta, np.zeros_like(z_delta)), axis=1)
+        forward = new_target - new_cam_pos
+        forward /= np.linalg.norm(forward)
+        forward = -forward  # robomimic defines forwards in negative
+        # Define a world up vector.
+        # (In many simulators, the z-axis is up. Adjust if necessary.)
+        up = np.array([0, 0, 1])
+
+        # Compute the right vector as the cross product of up and forward.
+        right = np.cross(up, forward)
+        right /= np.linalg.norm(right, axis=1, keepdims=True)
+
+        # Recompute the true up vector so it is orthogonal:
+        true_up = np.cross(forward, right)
+        R = np.stack((right, true_up, forward), axis=-1)
+        
+        quats = np.zeros(shape=(num_samples, 4))
+        for i, mat in enumerate(R):
+            quats[i] = T.mat2quat(mat)
+        
+        # return values in correct format
+        return list(zip(new_cam_pos, quats))
 
 class CameraPoseSampler:
 
@@ -155,7 +193,7 @@ class CameraPoseSampler:
 
     def __init__(self, sampler_type):
         self.sampler_type = sampler_type
-        assert self.sampler_type in ["small_perturb", "arc_90deg", "small_perturb_real"], "Sampler not implemented!"
+        assert self.sampler_type in ["small_perturb", "arc_90deg", "small_perturb_real", "large3d"], "Sampler not implemented!"
         self.robot_base_pos = np.array([0.01375589, 0.0, 0.83170968]) # harvested from Lift environment, set y = 0 to center in left/right directions. 
 
     def sample_poses(self, n, starting_pose):
@@ -187,3 +225,7 @@ class CameraPoseSampler:
                 )
         elif self.sampler_type == "small_perturb_real":
             return generate_random_camera_pose(initial_camera_pose, angle_std=self.SMALL_PERTURB_ANGLE_STD*5, position_std=self.SMALL_PERTURB_POSITION_STD*5, num_samples=n)
+
+        elif self.sampler_type == "large3d":
+            pos, _ = initial_camera_pose
+            return generate_random_camera_large3d(pos, num_samples=n, target=self.robot_base_pos)
