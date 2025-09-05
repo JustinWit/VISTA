@@ -1,7 +1,7 @@
 from vipl.models.augmentation.zeronvs_aug import ZeroNVSModel
-from vipl.utils.camera_pose_sampler import CameraPoseSampler
+from vipl.utils.camera_pose_sampler import CameraPoseSampler, generate_random_camera_pose, generate_random_camera_pose_real_world
 from vipl.utils.cam_utils import posori_to_rotmat
-from vipl.utils.constants import ZERONVS_CHECKPOINT_PATH, ZERONVS_CONFIG_PATH
+from vipl.utils.constants import ZERONVS_DROID_PATH, ZERONVS_CONFIG_PATH
 
 import robosuite.utils.transform_utils as T
 
@@ -15,7 +15,7 @@ import os
 
 def main(args):
     nvs_model = ZeroNVSModel(
-                checkpoint=ZERONVS_CHECKPOINT_PATH,
+                checkpoint=ZERONVS_DROID_PATH,
                 config=ZERONVS_CONFIG_PATH,
                 zeronvs_params=dict(
                     ddim_steps=250,
@@ -36,12 +36,15 @@ def main(args):
     initial_camera_pose = T.mat2pose(initial_camera_matrix)  # convert to position and orientation
 
 
-    random_camera_range = 'small_perturb'  # "how to sample the random camera poses. Options are 'small_perturb', 'arc_90deg'
-    camera_pose_sampler = CameraPoseSampler(sampler_type=random_camera_range)
+    # random_camera_range = 'small_perturb'  # "how to sample the random camera poses. Options are 'small_perturb', 'arc_90deg'
+    # camera_pose_sampler = CameraPoseSampler(sampler_type=random_camera_range)
 
     # loop through the dataset
     fnames = sorted(os.listdir(args.data_path))
     fnames = [fname for fname in fnames if fname.endswith('.h5')]
+
+    # grab the frames specified in args
+    fnames = fnames[args.start_idx:args.start_idx+args.n]
 
     num_demos = len(fnames)
 
@@ -54,7 +57,10 @@ def main(args):
         third_ppov = third_ppov[:, :, :, ::-1]  # convert from BGR to RGB
 
 
-        random_camera_poses = camera_pose_sampler.sample_poses(n=third_ppov.shape[0], starting_pose=initial_camera_pose)
+        # random_camera_poses = camera_pose_sampler.sample_poses(n=third_ppov.shape[0], starting_pose=initial_camera_pose)
+        # random_camera_poses = generate_random_camera_pose(current_pose=initial_camera_pose, angle_std=.375, position_std=0.15, num_samples=third_ppov.shape[0])
+        # breakpoint()
+        random_camera_poses = generate_random_camera_pose_real_world(initial_camera_pose[0], T.quat2mat(initial_camera_pose[1]), pos_rand=0.5, vert_rand=0.42, num_samples=third_ppov.shape[0])
 
         # Create a new dataset to store the augmented images
         augmented_frames = []
@@ -89,9 +95,9 @@ def main(args):
         if not os.path.exists(args.data_path + "_vista"):
             os.makedirs(args.data_path + "_vista")
         
-        demo_idx = int(fname.split('.')[0].split('_')[1]) + (num_demos * args.i)
-        new_fname = f'demo_{demo_idx:03d}.h5'
-        with h5py.File(os.path.join(args.data_path + "_vista", new_fname), 'w') as f:
+        # demo_idx = int(fname.split('.')[0].split('_')[1])   # + (num_demos * args.i)
+        # new_fname = f'demo_{demo_idx:03d}.h5'
+        with h5py.File(os.path.join(args.data_path + "_vista", fname), 'w') as f:
             # copy original data
             for key in data.keys():
                 if key != 'rgb_frames':
@@ -100,11 +106,37 @@ def main(args):
             augmented_frames = np.array(augmented_frames)
             f.create_dataset('rgb_frames', data=augmented_frames)
 
+        # print(f"File written to: {os.path.join(args.data_path + "_vista", fname)}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run ZeroNVS augmentation")
-    parser.add_argument('--data_path', type=str, required=True, help='Path to the dataset')
-    parser.add_argument('-i', type=int, required=False, help='Starting demo number to save file under. Use for array jobs', default=0)
+    parser.add_argument(
+        '--data_path', 
+        type=str, 
+        required=True, 
+        help='Path to the dataset')
+
+    # parser.add_argument(
+    #     '--num_copies', 
+    #     type=int, 
+    #     required=False, 
+    #     default=1, 
+    #     help='How many are being made of each demo', 
+    # )
+
+    parser.add_argument(
+        "--n",
+        type=int,
+        default=None,
+        help="(optional) stop after n trajectories are processed",
+    )
+
+    parser.add_argument(
+        "--start-idx",
+        type=int,
+        default=0,
+        help="start index to process trajectories",
+    )
     args = parser.parse_args()
     main(args)

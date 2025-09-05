@@ -2,6 +2,8 @@ import copy
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
+import robosuite.utils.transform_utils as T
+
 
 def random_camera_perturbation(angle_std=0.1):
     # Generate random perturbation in orientation
@@ -106,6 +108,41 @@ def generate_random_camera_pose_on_sphere(current_pose, radius, radius_std=0.05,
         orientation_quaternion = R.from_matrix(orientation_matrix).as_quat()
         generated_poses.append((position_matrix, orientation_quaternion))
     return generated_poses
+
+
+def generate_random_camera_pose_real_world(pos, rot, pos_rand=0.5, vert_rand=0.42, num_samples=10):
+        """Randomizes Camera positions and rotations. """
+        target = np.array([-0.30895138 + 0.225 / 2.0 + 0.2, 0, 0.82001764])
+        target_rand = 0.02
+        pos = np.expand_dims(pos, 0)
+
+        # sample points uniformly in a cube TODO: num_samples
+        pos_delta = np.random.uniform(-pos_rand, pos_rand, (num_samples, 2))
+        vert_delta = np.random.uniform(-vert_rand, vert_rand, (num_samples, 1))
+        new_cam_pos = pos + np.concatenate((pos_delta, vert_delta), axis=1)
+
+        target_delta = np.random.uniform(-target_rand, target_rand, (num_samples, 2))
+        new_target = target + np.concatenate((target_delta, np.zeros_like(vert_delta)), axis=1)
+        forward = new_target - new_cam_pos
+        forward /= np.linalg.norm(forward)
+        # Define a world up vector. TODO: ensure this is correct
+        # (In many simulators, the z-axis is up. Adjust if necessary.)
+        up = np.array([0, 0, 1])
+
+        # Compute the right vector as the cross product of up and forward.
+        right = np.cross(up, forward)
+        right /= np.linalg.norm(right, axis=1, keepdims=True)
+
+        # Recompute the true up vector so it is orthogonal:
+        true_up = np.cross(forward, right)
+        R = np.stack((right, true_up, forward), axis=-1)
+        
+        quats = np.zeros(shape=(num_samples, 4))
+        for i, mat in enumerate(R):
+            quats[i] = T.mat2quat(mat)
+        
+        #TODO return values in correct format
+        return list(zip(new_cam_pos, quats))
 
 
 class CameraPoseSampler:
