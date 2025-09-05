@@ -40,10 +40,10 @@
             "warmstart": 0,
             "terminate_on_success": true
         }, 
-        "domain" : "A"
+        "domain" : "B"
     },
     "train": {
-        "data": "/coc/testnvme/jwit3/vista_workspace/datasets/arc_90deg/coffee/fixed_cam_domainA.hdf5",
+        "data": "/coc/testnvme/jwit3/vista_workspace/datasets/arc_90deg/coffee/fixed_cam_domainB.hdf5",
         "output_dir": "../../../experiment_results/sim2sim/arc_90deg/coffee_bc/trained_models",
         "num_data_workers": 2,
         "hdf5_cache_mode": "low_dim",
