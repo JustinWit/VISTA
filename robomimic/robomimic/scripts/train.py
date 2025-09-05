@@ -40,7 +40,7 @@ import robomimic.utils.file_utils as FileUtils
 from robomimic.config import config_factory
 from robomimic.algo import algo_factory, RolloutPolicy
 from robomimic.utils.log_utils import PrintLogger, DataLogger, flush_warnings
-from robomimic.envs.wrappers import RandomizedCameraWrapper
+from robomimic.envs.wrappers import RandomizedCameraWrapper, ChangeDomainWrapper
 
 from vipl.utils.camera_pose_sampler import CameraPoseSampler
 
@@ -111,8 +111,12 @@ def train(config, device):
                 use_depth_obs=shape_meta["use_depths"],
             )
             env = EnvUtils.wrap_env_from_config(env, config=config) # apply environment warpper, if applicable
+            if config.experiment.domain is not None:
+                env = ChangeDomainWrapper(env, config.experiment.domain)
             envs[env.name] = env
             print(envs[env.name])
+
+            
 
         if config.experiment.additional_random_camera_test_env:
             env = EnvUtils.create_env_from_metadata(
@@ -123,12 +127,15 @@ def train(config, device):
                 use_image_obs=shape_meta["use_images"],
                 use_depth_obs=shape_meta["use_depths"],
             )
+
             if "sampler_type" in config.experiment.random_camera_params:
                 camera_pose_sampler = CameraPoseSampler(sampler_type=config.experiment.random_camera_params.sampler_type) 
                 randomized_camera_env = RandomizedCameraWrapper(env=env,
                                                                  camera_name=config.experiment.random_camera_params.camera_name,
                                                                  camera_pose_sampler=camera_pose_sampler)
-            
+            if config.experiment.domain is not None:
+                randomized_camera_env = ChangeDomainWrapper(randomized_camera_env, config.experiment.domain)
+
             envs[f"{env.name} random cam"] = randomized_camera_env
             print("Added randomized camera environment for testing")
 
@@ -385,6 +392,12 @@ def main(args):
 
     if args.name is not None:
         config.experiment.name = args.name
+    
+    if args.run_number is not None:
+        config.experiment.name = config.experiment.name + f"_{args.run_number}"
+
+    if args.seed is not None:
+        config.train.seed = args.seed
 
     # get torch device
     device = TorchUtils.get_torch_device(try_to_use_cuda=config.train.cuda)
@@ -460,6 +473,18 @@ if __name__ == "__main__":
         "--debug",
         action='store_true',
         help="set this flag to run a quick training run for debugging purposes"
+    )
+
+    parser.add_argument(
+        "--run_number",
+        type=int, 
+        help="set this flag to specify a run number for slurm array jobs"
+    )
+
+    parser.add_argument(
+        "--seed",
+        type=int, 
+        help="set this flag to specify a random seed"
     )
 
     args = parser.parse_args()

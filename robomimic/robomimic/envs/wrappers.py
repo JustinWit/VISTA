@@ -13,6 +13,7 @@ try:
 except ImportError:
     print("Warning: robosuite not installed, RandomizedCameraWrapper will not work.")
 
+from exp_processing import change_to_domain
 
 class EnvWrapper(object):
     """
@@ -301,3 +302,21 @@ class FrameStackWrapper(EnvWrapper):
     def _to_string(self):
         """Info to pretty print."""
         return "num_frames={}".format(self.num_frames)
+
+class ChangeDomainWrapper(EnvWrapper):
+    """
+    Wrapper to modify the XML of the environment on each reset.
+    """
+
+    def __init__(self, env, domain):
+        super(ChangeDomainWrapper, self).__init__(env)
+        self.domain = domain
+
+    def reset(self):
+        self.env.reset()
+        reset_state = self.get_state()
+        reset_state["model"] = change_to_domain(reset_state["model"], self.domain)
+        obs = self.env.reset_to(reset_state)
+
+        return obs
+
