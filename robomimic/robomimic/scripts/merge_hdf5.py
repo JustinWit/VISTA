@@ -58,9 +58,9 @@ def main(args):
             # demo_grp_out = data_grp.create_group("demo_{}".format(demo_idx))
             # clone the entire demo group
             demo_grp.copy(demo_grp, data_grp)
-        # copy mask
-        if i == 0:
-            f_in.copy(f_in["mask"], f_out)
+        # # copy mask
+        # if i == 0:
+        #     f_in.copy(f_in["mask"], f_out)
         f_in.close()
     f_out.close()
 

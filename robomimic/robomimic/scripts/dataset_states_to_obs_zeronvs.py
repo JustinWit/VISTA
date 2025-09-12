@@ -415,7 +415,11 @@ def dataset_states_to_obs(args):
             ep_data_grp.create_dataset("dones", data=np.array(traj["dones"]))
             for k in traj["obs"]:
                 if args.compress:
-                    ep_data_grp.create_dataset("obs/{}".format(k), data=np.array(traj["obs"][k]), compression="gzip")
+                    if "image" in k:
+                        # save as jpeg bytes
+                        ep_data_grp.create_dataset("obs/{}".format(k), data=img_to_jpg_bytes(traj["obs"][k]), compression="gzip")
+                    else:
+                        ep_data_grp.create_dataset("obs/{}".format(k), data=np.array(traj["obs"][k]), compression="gzip")
                 else:
                     ep_data_grp.create_dataset("obs/{}".format(k), data=np.array(traj["obs"][k]))
                 if not args.exclude_next_obs:

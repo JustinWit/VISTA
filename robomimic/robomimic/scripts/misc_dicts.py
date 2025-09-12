@@ -6,7 +6,6 @@ DOMAIN_A = {
     'tex-light-gray-plaster': 'blue_wallpaper.png', 
     'tex-light-wood' : 'kitchen_tabletop.png', 
     'tex-dark-wood' : 'sink_top.png', 
-
 }
 
 DOMAIN_B = {
@@ -23,8 +22,10 @@ DOMAIN_C = {
 
 DOMAIN_D = {
     'texplane': 'pink-plaster.png', 
-    'tex-ceramic': 'steel-scratched.png', 
-    'tex-light-gray-plaster': 'pink-texture.png', 
+    'tex-ceramic': 'woodentabletop.png', 
+    'tex-light-gray-plaster': 'blue_wallpaper.png', 
+    'tex-light-wood' : 'woodentabletop.png', 
+    'tex-dark-wood' : 'sink_top.png', 
 }
 
 
@@ -57,6 +58,7 @@ STACK3_IDS = {
     24 : 211,  # green block
     25 : 212,  # blue block
     45 : 114,  # robot base
+    47 : 116,  # table legs
 }
 
 SQUARE_IDS = {
@@ -66,6 +68,7 @@ SQUARE_IDS = {
     2 : 310,  # square peg
     25 : 311,  # square key
     45 : 114,  # robot base
+    47 : 116,  # table legs
 }
 
 TPA_IDS = {
@@ -76,6 +79,7 @@ TPA_IDS = {
     24 : 411, 
     25 : 412, 
     45 : 114, 
+    47 : 116,  # table legs
 }
 
 MUG_IDS = {
@@ -85,6 +89,7 @@ MUG_IDS = {
     23 : 510,  # tool box ID 
     26 : 511,  # mug
     45 : 114, 
+    47 : 116,  # table legs
 }
 
 NUT_ASSEMBLY_IDS = {
@@ -96,6 +101,7 @@ NUT_ASSEMBLY_IDS = {
     35 : 311,  # square key
     36 : 313,  # round key
     45 : 115,  # sawyer base
+    47 : 116,  # table legs
 }
 
 KITCHEN_IDS = {
@@ -108,16 +114,19 @@ KITCHEN_IDS = {
     28 : 613, 
     31 : 614, 
     45 : 114, 
+    47 : 116,  # table legs
 }
 
 COFFEE_PREP_IDS = {
     0 : 110,
     1 : 111, 
     2 : 112, 
+    23 : 711, 
     24 : 710, 
     32 : 510,  # toolbox
     35 : 511,  # mug 
     45 : 114, 
+    47 : 116,  # table legs
 }
 
 PICK_PLACE_IDS = {
@@ -135,6 +144,7 @@ PICK_PLACE_IDS = {
     40 : 818, 
     41 : 819, 
     45 : 115, 
+    47 : 116,  # table legs
 }
 
 MASTER_LIST_IDS = {
@@ -156,35 +166,71 @@ HAMMER_SEG_KEYS = {
 
 
 STACK3_SEG_KEYS = {
-    82 : 45, 
+    82 : 45,  # robot base
+    9 : 47,  # table legs
+    10 : 47, 
+    11 : 47, 
+    12 : 47, 
 }
 
 SQUARE_SEG_KEYS = {
-    86 : 45, 
+    86 : 45,  # robot base
+    9 : 47,  # table legs
+    10 : 47, 
+    11 : 47, 
+    12 : 47, 
 }
 
 TPA_SEG_KEYS = {
-    82 : 45, 
+    82 : 45,  # robot base
+    9 : 47,  # table legs
+    10 : 47, 
+    11 : 47, 
+    12 : 47, 
 }
 
 MUG_SEG_KEYS = {
-    82 : 45, 
+    82 : 45,  # robot base
+    9 : 47,  # table legs
+    10 : 47, 
+    11 : 47, 
+    12 : 47, 
 }
 
 NUT_ASSEMBLY_SEG_KEYS = {
-    99 : 45, 
+    99 : 45,  # robot base
+    9 : 47,  # table legs
+    10 : 47, 
+    11 : 47, 
+    12 : 47, 
 }
 
 KITCHEN_SEG_KEYS = {
-    82 : 45, 
+    82 : 45,  # robot base
+    9 : 47,  # table legs
+    10 : 47, 
+    11 : 47, 
+    12 : 47, 
 }
 
 COFFEE_PREP_SEG_KEYS = {
-    82 : 45, 
+    82 : 45,  # robot base
+    9 : 47,  # table legs
+    10 : 47, 
+    11 : 47, 
+    12 : 47, 
 }
 
 PICK_PLACE_SEG_KEYS = {
-    121 : 45, 
+    121 : 45,  # robot base
+    17 : 47, 
+    18 : 47, 
+    19 : 47, 
+    20 : 47, 
+    35 : 47, 
+    36 : 47, 
+    37 : 47, 
+    38 : 47, 
 }
 
 

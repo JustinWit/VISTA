@@ -110,6 +110,10 @@ def assign_groups(env, obs, camera_names, seg_name='segmentation_element'):
                 body_id = env.env.sim.model.geom_bodyid[i]
                 root_id = env.env.sim.model.body_rootid[body_id]
 
+                # have to recheck manuel remaps here
+                if i in GEOM_MAPS[env.name]:
+                    root_id = GEOM_MAPS[env.name][i]
+
                 final_seg[x][geom_seg[x] == i] = root_id
 
         # map IDs to master list IDS
