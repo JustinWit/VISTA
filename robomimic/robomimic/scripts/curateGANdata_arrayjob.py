@@ -17,7 +17,7 @@ def get_frame_count(file, start_idx, n):
     return frame_count
 
 
-def extract_from_file(hdf5_path, out_agentview, out_wristview, counters, num_demos, start_idx, view_per_frame):
+def extract_from_file(hdf5_path, out_agentview, counters, num_demos, start_idx, view_per_frame):
     with h5py.File(hdf5_path, "r") as f:
         demos = list(f["data"].keys())
         demos.sort()
@@ -33,13 +33,15 @@ def extract_from_file(hdf5_path, out_agentview, out_wristview, counters, num_dem
             for t in range(T):
                 if view_per_frame == 1:
                     idx_a = counters["agentview"]
-                    idx_w = counters["wristview"]
+                    # idx_w = counters["wristview"]
                     # Adjust keys if needed
                     agentview_imgs = obs[f"agentview_image"]                     # (T, H, W, 3)
-                    wrist_imgs = obs[f"robot0_eye_in_hand_image"]                # (T, H, W, 3)
+                    # wrist_imgs = obs[f"robot0_eye_in_hand_image"]                # (T, H, W, 3)
                     agentview_segs = obs[f"agentview_segmentation_final"]        # (T, H, W)
-                    wrist_segs = obs[f"robot0_eye_in_hand_segmentation_final"]   # (T, H, W)
+                    # wrist_segs = obs[f"robot0_eye_in_hand_segmentation_final"]   # (T, H, W)
                     # agentview
+                    assert not os.path.exists(os.path.join(out_agentview, f"{idx_a}.png"))
+                    assert not os.path.exists(os.path.join(out_agentview, f"{idx_a}_seg.npy"))
                     Image.fromarray(agentview_imgs[t].astype(np.uint8)).save(
                         os.path.join(out_agentview, f"{idx_a}.png")
                     )
@@ -47,33 +49,33 @@ def extract_from_file(hdf5_path, out_agentview, out_wristview, counters, num_dem
                     counters["agentview"] += 1
 
                     # wristview
-                    Image.fromarray(wrist_imgs[t].astype(np.uint8)).save(
-                        os.path.join(out_wristview, f"{idx_w}.png")
-                    )
-                    np.save(os.path.join(out_wristview, f"{idx_w}_seg.npy"), wrist_segs[t].squeeze())
-                    counters["wristview"] += 1
-                else:
-                    for j in range(view_per_frame):
-                        idx_a = counters["agentview"]
-                        idx_w = counters["wristview"]
-                        # Adjust keys if needed
-                        agentview_imgs = obs[f"agentview_{j}_image"]                     # (T, H, W, 3)
-                        wrist_imgs = obs[f"robot0_eye_in_hand_{j}_image"]                # (T, H, W, 3)
-                        agentview_segs = obs[f"agentview_{j}_segmentation_final"]        # (T, H, W)
-                        wrist_segs = obs[f"robot0_eye_in_hand_{j}_segmentation_final"]   # (T, H, W)
-                        # agentview
-                        Image.fromarray(agentview_imgs[t].astype(np.uint8)).save(
-                            os.path.join(out_agentview, f"{idx_a}.png")
-                        )
-                        np.save(os.path.join(out_agentview, f"{idx_a}_seg.npy"), agentview_segs[t].squeeze())
-                        counters["agentview"] += 1
+                    # Image.fromarray(wrist_imgs[t].astype(np.uint8)).save(
+                    #     os.path.join(out_wristview, f"{idx_w}.png")
+                    # )
+                    # np.save(os.path.join(out_wristview, f"{idx_w}_seg.npy"), wrist_segs[t].squeeze())
+                    # counters["wristview"] += 1
+                # else:
+                #     for j in range(view_per_frame):
+                #         idx_a = counters["agentview"]
+                #         idx_w = counters["wristview"]
+                #         # Adjust keys if needed
+                #         agentview_imgs = obs[f"agentview_{j}_image"]                     # (T, H, W, 3)
+                #         wrist_imgs = obs[f"robot0_eye_in_hand_{j}_image"]                # (T, H, W, 3)
+                #         agentview_segs = obs[f"agentview_{j}_segmentation_final"]        # (T, H, W)
+                #         wrist_segs = obs[f"robot0_eye_in_hand_{j}_segmentation_final"]   # (T, H, W)
+                #         # agentview
+                #         Image.fromarray(agentview_imgs[t].astype(np.uint8)).save(
+                #             os.path.join(out_agentview, f"{idx_a}.png")
+                #         )
+                #         np.save(os.path.join(out_agentview, f"{idx_a}_seg.npy"), agentview_segs[t].squeeze())
+                #         counters["agentview"] += 1
 
-                        # wristview
-                        Image.fromarray(wrist_imgs[t].astype(np.uint8)).save(
-                            os.path.join(out_wristview, f"{idx_w}.png")
-                        )
-                        np.save(os.path.join(out_wristview, f"{idx_w}_seg.npy"), wrist_segs[t].squeeze())
-                        counters["wristview"] += 1
+                #         # wristview
+                #         Image.fromarray(wrist_imgs[t].astype(np.uint8)).save(
+                #             os.path.join(out_wristview, f"{idx_w}.png")
+                #         )
+                #         np.save(os.path.join(out_wristview, f"{idx_w}_seg.npy"), wrist_segs[t].squeeze())
+                #         counters["wristview"] += 1
 
 
 def main():
@@ -88,9 +90,9 @@ def main():
     args = parser.parse_args()
 
     out_agentview = os.path.join(args.output, f"{args.prefix}_agentview")
-    out_wristview = os.path.join(args.output, f"{args.prefix}_wristview")
+    # out_wristview = os.path.join(args.output, f"{args.prefix}_wristview")
     os.makedirs(out_agentview, exist_ok=True)
-    os.makedirs(out_wristview, exist_ok=True)
+    # os.makedirs(out_wristview, exist_ok=True)
 
     hdf5_files = [os.path.join(args.root, f) for f in os.listdir(args.root) if f.endswith(".hdf5")]
     hdf5_files.sort()
@@ -99,7 +101,6 @@ def main():
         return
 
     file_idx = hdf5_files.index(args.file)
-
     png_start_idx = 0
     # figure out start idx for png
     # first loop over all frames from previous tasks
@@ -120,9 +121,9 @@ def main():
 
     # set counters
     # Keep global counters so numbering continues across files/demos
-    counters = {"agentview": png_start_idx, "wristview": png_start_idx}
+    counters = {"agentview": png_start_idx}
 
-    extract_from_file(hdf5_files[file_idx], out_agentview, out_wristview, counters, args.n, args.start_idx, args.views_per_frame)
+    extract_from_file(hdf5_files[file_idx], out_agentview, counters, args.n, args.start_idx, args.views_per_frame)
 
 
 if __name__ == "__main__":

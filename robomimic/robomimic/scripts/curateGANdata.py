@@ -6,18 +6,18 @@ from PIL import Image
 from tqdm import tqdm
 
 
-def extract_test_data(hdf5_path, out_agentview, out_wristview, counters):
+def extract_test_data(hdf5_path, out_agentview, counters):
     with h5py.File(hdf5_path, "r") as f:
         # Adjust keys if needed
-        domainA_agentview_imgs = f["data/domainA/obs/agentview_image"]                # (T, H, W, 3)
-        domainA_wrist_imgs = f["data/domainA/obs/robot0_eye_in_hand_image"]           # (T, H, W, 3)
-        domainA_agentview_segs = f["data/domainA/obs/agentview_segmentation_final"]   # (T, H, W)
-        domainA_wrist_segs = f["data/domainA/obs/robot0_eye_in_hand_segmentation_final"]  # (T, H, W)
+        domainA_agentview_imgs = f["data/domainD/obs/agentview_image"]                # (T, H, W, 3)
+        # domainA_wrist_imgs = f["data/domainA/obs/robot0_eye_in_hand_image"]           # (T, H, W, 3)
+        domainA_agentview_segs = f["data/domainD/obs/agentview_segmentation_final"]   # (T, H, W)
+        # domainA_wrist_segs = f["data/domainA/obs/robot0_eye_in_hand_segmentation_final"]  # (T, H, W)
         
         domainB_agentview_imgs = f["data/domainB/obs/agentview_image"]                # (T, H, W, 3)
-        domainB_wrist_imgs = f["data/domainB/obs/robot0_eye_in_hand_image"]           # (T, H, W, 3)
+        # domainB_wrist_imgs = f["data/domainB/obs/robot0_eye_in_hand_image"]           # (T, H, W, 3)
         domainB_agentview_segs = f["data/domainB/obs/agentview_segmentation_final"]   # (T, H, W)
-        domainB_wrist_segs = f["data/domainB/obs/robot0_eye_in_hand_segmentation_final"]  # (T, H, W)
+        # domainB_wrist_segs = f["data/domainB/obs/robot0_eye_in_hand_segmentation_final"]  # (T, H, W)
 
     
 
@@ -25,10 +25,14 @@ def extract_test_data(hdf5_path, out_agentview, out_wristview, counters):
 
         for t in tqdm(range(T)):
             idx_a = counters["agentview"]
-            idx_w = counters["wristview"]
+            # idx_w = counters["wristview"]
 
             # agentview
             # domainA
+            assert not os.path.exists(os.path.join(out_agentview + "_domainA", f"{idx_a}.png"))
+            assert not os.path.exists(os.path.join(out_agentview + "_domainA", f"{idx_a}_seg.npy"))
+            assert not os.path.exists(os.path.join(out_agentview + "_domainB", f"{idx_a}.png"))
+            assert not os.path.exists(os.path.join(out_agentview + "_domainB", f"{idx_a}_seg.npy"))
             Image.fromarray(domainA_agentview_imgs[t].astype(np.uint8)).save(
                 os.path.join(out_agentview + "_domainA", f"{idx_a}.png")
             )
@@ -41,18 +45,18 @@ def extract_test_data(hdf5_path, out_agentview, out_wristview, counters):
             np.save(os.path.join(out_agentview + "_domainB", f"{idx_a}_seg.npy"), domainB_agentview_segs[t].squeeze())
             counters["agentview"] += 1
 
-            # wristview
-            Image.fromarray(domainA_wrist_imgs[t].astype(np.uint8)).save(
-                os.path.join(out_wristview + "_domainA", f"{idx_w}.png")
-            )
-            np.save(os.path.join(out_wristview + "_domainA", f"{idx_w}_seg.npy"), domainA_wrist_segs[t].squeeze())
+            # # wristview
+            # Image.fromarray(domainA_wrist_imgs[t].astype(np.uint8)).save(
+            #     os.path.join(out_wristview + "_domainA", f"{idx_w}.png")
+            # )
+            # np.save(os.path.join(out_wristview + "_domainA", f"{idx_w}_seg.npy"), domainA_wrist_segs[t].squeeze())
 
-            # domainB 
-            Image.fromarray(domainB_wrist_imgs[t].astype(np.uint8)).save(
-                os.path.join(out_wristview + "_domainB", f"{idx_w}.png")
-            )
-            np.save(os.path.join(out_wristview + "_domainB", f"{idx_w}_seg.npy"), domainB_wrist_segs[t].squeeze())
-            counters["wristview"] += 1
+            # # domainB 
+            # Image.fromarray(domainB_wrist_imgs[t].astype(np.uint8)).save(
+            #     os.path.join(out_wristview + "_domainB", f"{idx_w}.png")
+            # )
+            # np.save(os.path.join(out_wristview + "_domainB", f"{idx_w}_seg.npy"), domainB_wrist_segs[t].squeeze())
+            # counters["wristview"] += 1
 
 
 def extract_from_file(hdf5_path, out_agentview, out_wristview, counters):
@@ -97,18 +101,18 @@ def main():
     args = parser.parse_args()
 
     out_agentview = os.path.join(args.output, f"{args.prefix}_agentview")
-    out_wristview = os.path.join(args.output, f"{args.prefix}_wristview")
+    # out_wristview = os.path.join(args.output, f"{args.prefix}_wristview")
     if args.test_data:
         os.makedirs(out_agentview + "_domainA", exist_ok=True)
-        os.makedirs(out_wristview + "_domainA", exist_ok=True) 
+        # os.makedirs(out_wristview + "_domainA", exist_ok=True) 
         os.makedirs(out_agentview + "_domainB", exist_ok=True)
-        os.makedirs(out_wristview + "_domainB", exist_ok=True) 
+        # os.makedirs(out_wristview + "_domainB", exist_ok=True) 
     else:
         os.makedirs(out_agentview, exist_ok=True)
-        os.makedirs(out_wristview, exist_ok=True)
+        # os.makedirs(out_wristview, exist_ok=True)
 
     # Keep global counters so numbering continues across files/demos
-    counters = {"agentview": 0, "wristview": 0}
+    counters = {"agentview": 0}
 
     hdf5_files = [os.path.join(args.root, f) for f in os.listdir(args.root) if f.endswith(".hdf5")]
     if not hdf5_files:
@@ -117,7 +121,7 @@ def main():
 
     for hdf5_path in hdf5_files:
         if args.test_data:
-            extract_test_data(hdf5_path, out_agentview, out_wristview, counters)
+            extract_test_data(hdf5_path, out_agentview, counters)
         else:
             extract_from_file(hdf5_path, out_agentview, out_wristview, counters)
 
