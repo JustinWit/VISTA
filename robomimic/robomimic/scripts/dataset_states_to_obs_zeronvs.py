@@ -416,8 +416,7 @@ def dataset_states_to_obs(args):
             for k in traj["obs"]:
                 if args.compress:
                     if "image" in k:
-                        # save as jpeg bytes
-                        ep_data_grp.create_dataset("obs/{}".format(k), data=img_to_jpg_bytes(traj["obs"][k]), compression="gzip")
+                        ep_data_grp.create_dataset("obs/{}".format(k), data=np.array(traj["obs"][k]), compression="gzip")
                     else:
                         ep_data_grp.create_dataset("obs/{}".format(k), data=np.array(traj["obs"][k]), compression="gzip")
                 else:
