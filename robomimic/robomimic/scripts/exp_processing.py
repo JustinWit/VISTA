@@ -117,8 +117,7 @@ def assign_groups(env, obs, camera_names, seg_name='segmentation_element'):
                 final_seg[x][geom_seg[x] == i] = root_id
 
         # map IDs to master list IDS
-        if env.name not in MASTER_LIST_IDS.keys():
-            breakpoint()
+        assert env.name  in MASTER_LIST_IDS.keys(), f"Missing env.name: {env.name}"
         for i in MASTER_LIST_IDS[env.name]:
             final_seg[x][final_seg[x] == i] = MASTER_LIST_IDS[env.name][i]  # overwrite IDs to be unique
 
