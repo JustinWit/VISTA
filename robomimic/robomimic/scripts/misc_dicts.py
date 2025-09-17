@@ -14,19 +14,39 @@ DOMAIN_B = {
     'tex-light-gray-plaster': 'light-gray-plaster.png', 
 }
 
+# DOMAIN_C = {
+#     'texplane': 'black_texture.png', 
+#     'tex-ceramic': 'kitchen_tabletop.png', 
+#     'tex-light-gray-plaster': 'black_texture.png', 
+#     'tex-steel-brushed' : 'black_texture.png', 
+#     'tex-light-wood' : 'kitchen_tabletop.png', 
+#     'tex-dark-wood' : 'sink_top.png', 
+# }
+
 DOMAIN_C = {
-    'texplane': 'wood-varnished-panels.png', 
-    'tex-ceramic': 'desk_tabletop.png', 
-    'tex-light-gray-plaster': 'yellow-plaster.png', 
+    'texplane': 'black_texture.png', 
+    'tex-ceramic': 'gray-felt.png', 
+    'tex-light-gray-plaster': 'black_texture.png', 
+    'tex-steel-brushed' : 'black_texture.png', 
+    'tex-light-wood' : 'gray-felt.png', 
+    'tex-dark-wood' : 'dirt.png', 
 }
 
 DOMAIN_D = {
     'texplane': 'pink-plaster.png', 
-    'tex-ceramic': 'woodentabletop.png', 
+    'tex-ceramic': 'steel-brushed.png', 
     'tex-light-gray-plaster': 'blue_wallpaper.png', 
-    'tex-light-wood' : 'woodentabletop.png', 
-    'tex-dark-wood' : 'sink_top.png', 
+    'tex-light-wood' : 'steel-brushed.png', 
+    'tex-dark-wood' : 'wood-varnished-panels.png', 
 }
+
+# DOMAIN_D = {
+#     'texplane': 'pink-plaster.png', 
+#     'tex-ceramic': 'woodentabletop.png', 
+#     'tex-light-gray-plaster': 'blue_wallpaper.png', 
+#     'tex-light-wood' : 'woodentabletop.png', 
+#     'tex-dark-wood' : 'sink_top.png', 
+# }
 
 
 DOMAIN_MAP = {
@@ -147,6 +167,73 @@ PICK_PLACE_IDS = {
     47 : 116,  # table legs
 }
 
+PICK_PLACE_CAN_IDS = {
+    0 : 110, 
+    1 : 810, 
+    2 : 811, 
+    3 : 112, 
+    4 : 811, 
+    24 : 812, 
+    25 : 813, 
+    26 : 814, 
+    27 : 815,
+    31 : 819, 
+    45 : 114, 
+    47 : 116,  # table legs
+}
+
+COFFEE_D0_IDS = {
+    0 : 110,
+    1 : 111, 
+    2 : 112, 
+    23 : 711, 
+    24 : 710, 
+    45 : 114, 
+    47 : 116, 
+}
+
+HAMMER_IDS = {
+    0 : 110,
+    1 : 111, 
+    5 : 112, 
+    26 : 910, 
+    49 : 510, 
+    45 : 114, 
+    47 : 116, 
+
+}
+
+STACK_SIMPLE_IDS = {
+    0 : 110,
+    1 : 111, 
+    2 : 112,
+    23 : 210, 
+    24 : 211, 
+    45 : 114, 
+    47 : 116, 
+}
+
+NUT_SQUARE_IDS = {
+    0 : 110, 
+    1 : 111, 
+    2 : 310,
+    3 : 312, 
+    4 : 112, 
+    25 : 311, 
+    45 : 114, 
+    47 : 116, 
+}
+
+THREADING_IDS = {
+    0 : 110, 
+    1 : 111, 
+    2 : 112, 
+    23 : 911, 
+    24 : 912, 
+    45 : 114, 
+    47 : 116, 
+}
+
 MASTER_LIST_IDS = {
     'StackThree_D1' : STACK3_IDS, 
     'Square_D2' : SQUARE_IDS, 
@@ -156,12 +243,12 @@ MASTER_LIST_IDS = {
     'Kitchen_D1' : KITCHEN_IDS, 
     'CoffeePreparation_D1' : COFFEE_PREP_IDS, 
     'PickPlace_D0' : PICK_PLACE_IDS, 
-}
-
-
-HAMMER_SEG_KEYS = {
-    3 : 2, 
-    4 : 2, 
+    'PickPlaceCan' : PICK_PLACE_CAN_IDS, 
+    'Coffee_D0' : COFFEE_D0_IDS, 
+    'HammerCleanup_D0' : HAMMER_IDS, 
+    'Stack_D0' : STACK_SIMPLE_IDS, 
+    'NutAssemblySquare' : NUT_SQUARE_IDS, 
+    'Threading_D0' : THREADING_IDS, 
 }
 
 
@@ -233,6 +320,75 @@ PICK_PLACE_SEG_KEYS = {
     38 : 47, 
 }
 
+PICK_PLACE_CAN_SEG_KEYS = {
+    108 : 45,  # robot base
+    17 : 47, 
+    18 : 47, 
+    19 : 47, 
+    20 : 47, 
+    35 : 47, 
+    36 : 47, 
+    37 : 47, 
+    38 : 47, 
+}
+
+COFFEE_SEG_KEYS = {
+    82 : 45,  # robot base
+    9 : 47, 
+    10 : 47, 
+    11 : 47, 
+    12 : 47, 
+
+}
+
+HAMMER_SEG_KEYS = {
+    9 : 47, 
+    10 : 47, 
+    11 : 47, 
+    12 : 47, 
+    20 : 49, 
+    21 : 49, 
+    22 : 49, 
+    23 : 49, 
+    24 : 49, 
+    25 : 49, 
+    26 : 49, 
+    35 : 49, 
+    36 : 49, 
+    37 : 49, 
+    38 : 49, 
+    39 : 49, 
+    40 : 49, 
+    41 : 49, 
+    42 : 49, 
+    112 : 45, 
+}
+
+
+STACK_SIMPLE_SEG_KEYS = {
+    82 : 45, 
+    9 : 47,  # table legs
+    10 : 47, 
+    11 : 47, 
+    12 : 47, 
+}
+
+NUS_SQUARE_SEG_KEYS = {
+    86 : 45,
+    9 : 47,  # table legs
+    10 : 47, 
+    11 : 47, 
+    12 : 47, 
+}
+
+THREADING_SEG_KEYS = {
+    82 : 45,
+    9 : 47,  # table legs
+    10 : 47, 
+    11 : 47, 
+    12 : 47, 
+}
+
 
 GEOM_MAPS = {
     'HammerCleanup_D0' : HAMMER_SEG_KEYS, 
@@ -244,4 +400,9 @@ GEOM_MAPS = {
     'Kitchen_D1' : KITCHEN_SEG_KEYS, 
     'CoffeePreparation_D1' : COFFEE_PREP_SEG_KEYS, 
     'PickPlace_D0' : PICK_PLACE_SEG_KEYS, 
+    'PickPlaceCan' : PICK_PLACE_CAN_SEG_KEYS, 
+    'Coffee_D0' : COFFEE_SEG_KEYS, 
+    'Stack_D0' : STACK_SIMPLE_SEG_KEYS, 
+    'NutAssemblySquare' : NUS_SQUARE_SEG_KEYS, 
+    'Threading_D0' : THREADING_SEG_KEYS, 
 }
