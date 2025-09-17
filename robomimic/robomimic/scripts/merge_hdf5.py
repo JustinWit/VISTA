@@ -64,6 +64,8 @@ def main(args):
         f_in.close()
     f_out.close()
 
+    print(f"Wrote to: {output_file_abs_path}")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
