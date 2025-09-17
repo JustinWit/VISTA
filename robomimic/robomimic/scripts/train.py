@@ -285,7 +285,7 @@ def train(config, device):
 
         # do rollouts at fixed rate or if it's time to save a new ckpt
         video_paths = None
-        rollout_check = (epoch % config.experiment.rollout.rate == 0) or (should_save_ckpt and ckpt_reason == "time")
+        rollout_check = (epoch % config.experiment.rollout.rate == 0) # or (should_save_ckpt and ckpt_reason == "time")
         if config.experiment.rollout.enabled and (epoch > config.experiment.rollout.warmstart) and rollout_check:
 
             # wrap model as a RolloutPolicy to prepare for rollouts
@@ -399,6 +399,9 @@ def main(args):
     if args.seed is not None:
         config.train.seed = args.seed
 
+    if args.test_distro is not None:
+        config.experiment.random_camera_params.sampler_type = args.test_distro
+
     # get torch device
     device = TorchUtils.get_torch_device(try_to_use_cuda=config.train.cuda)
 
@@ -477,7 +480,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--run_number",
-        type=int, 
+        type=str, 
         help="set this flag to specify a run number for slurm array jobs"
     )
 
@@ -485,6 +488,12 @@ if __name__ == "__main__":
         "--seed",
         type=int, 
         help="set this flag to specify a random seed"
+    )
+
+    parser.add_argument(
+        "--test_distro",
+        type=str, 
+        help="set this flag to specify the test distribution"
     )
 
     args = parser.parse_args()
