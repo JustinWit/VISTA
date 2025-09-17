@@ -5,6 +5,7 @@ import torch
 from torchmetrics.image.fid import FrechetInceptionDistance
 from tqdm import tqdm
 import re
+import os
 
 def stream_h5_images_from_demos(h5_path, dataset_path="obs/agentview_image"):
     """Yield batches of images from a single HDF5 file containing multiple demos."""
@@ -56,18 +57,45 @@ def compute_fid(real_file, fake_file, dataset_path="obs/agentview_image", batch_
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Compute FID score between two single H5 demo files.")
-    parser.add_argument("--real", type=str, required=True, help="H5 file containing real demos")
+    # parser.add_argument("--real", type=str, required=True, help="H5 file containing real demos")
     parser.add_argument("--fake", type=str, required=True, help="H5 file containing fake demos")
+    parser.add_argument("--task", type=str, required=True, help="task")
+
     parser.add_argument("--dataset_path", type=str, default="obs/agentview_image",
                         help="Path inside each demo group to images (default: obs/agentview_image)")
     parser.add_argument("--batch_size", type=int, default=256, help="Batch size for FID computation")
     args = parser.parse_args()
 
+    root_path = "datasets/arc_90deg"
+    real_file = "random_cam_sim_domainB.hdf5"
+    task = args.task
+    fake = args.fake
+
     fid_score = compute_fid(
-        real_file=args.real,
-        fake_file=args.fake,
+        real_file=os.path.join(root_path, task, real_file),
+        fake_file=os.path.join(root_path, task, fake),
         dataset_path=args.dataset_path,
         batch_size=args.batch_size
     )
 
-    print(f"FID score: {fid_score:.4f}")
+    print(f"FID score for {task}/{fake}: {fid_score:.4f}")
+
+
+    # real_file = "random_cam_sim_domainB.hdf5"
+    # # fake_files = ["fixed_cam_domainB.hdf5", "random_cam_deproj_domainB.hdf5", "random_cam_mimicgen_domainB.hdf5", "random_cam_sim_domainA.hdf5"]
+    # fake_files = ["random_cam_sim_domainA_translated_by_sim_lowest_lr_upscale_256__0.hdf5"]
+    # root_path = "datasets/arc_90deg"
+    # dir_path = ["coffee", "hammer", "stack", "square", "threading", "can"]
+
+    # for task in dir_path:
+    #     for fake in fake_files:
+    #         fid_score = compute_fid(
+    #             real_file=os.path.join(root_path, task, real_file),
+    #             fake_file=os.path.join(root_path, task, fake),
+    #             dataset_path=args.dataset_path,
+    #             batch_size=args.batch_size
+    #         )
+
+    #         print(f"FID score for {task}/{fake}: {fid_score:.4f}")
+
+    
