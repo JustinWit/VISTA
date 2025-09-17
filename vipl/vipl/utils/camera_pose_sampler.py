@@ -193,7 +193,7 @@ class CameraPoseSampler:
 
     def __init__(self, sampler_type):
         self.sampler_type = sampler_type
-        assert self.sampler_type in ["small_perturb", "arc_90deg", "small_perturb_real", "large3d"], "Sampler not implemented!"
+        assert self.sampler_type in ["small_perturb", "arc_90deg", "small_perturb_real", "large3d", "small3d"], "Sampler not implemented!"
         self.robot_base_pos = np.array([0.01375589, 0.0, 0.83170968]) # harvested from Lift environment, set y = 0 to center in left/right directions. 
 
     def sample_poses(self, n, starting_pose):
@@ -229,3 +229,7 @@ class CameraPoseSampler:
         elif self.sampler_type == "large3d":
             pos, _ = initial_camera_pose
             return generate_random_camera_large3d(pos, num_samples=n, target=self.robot_base_pos)
+
+        elif self.sampler_type == "small3d":
+            pos, _ = initial_camera_pose
+            return generate_random_camera_large3d(pos, pos_rand=0.25, vert_rand=0.21, num_samples=n, target=self.robot_base_pos)
